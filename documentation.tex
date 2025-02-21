@@ -1,0 +1,237 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{physics}
+\usepackage{siunitx}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+\title{Continuous Motion Profile Visualization:\\Implementation and Mathematical Analysis}
+\author{Sarah Guo, Owen Li, Jayden Ng, Anthony Reimche}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+This document presents a comprehensive analysis of a Python implementation for visualizing continuous motion profiles. We discuss the mathematical foundations of smooth acceleration transitions, the numerical methods employed for integration, and the technical implementation details. The focus is on creating a user-friendly interface that displays both the motion profiles and their underlying mathematical equations.
+\end{abstract}
+
+\tableofcontents
+
+\section{Introduction}
+The visualization of motion profiles with continuous acceleration transitions is crucial in robotics and control systems. This implementation provides a solution that bridges the gap between theoretical motion planning and practical visualization, using smooth hyperbolic tangent functions to model acceleration transitions.
+
+Given a trajectory from time $t=0$ to final time $T$ seconds, our implementation satisfies the following constraints:
+
+\begin{itemize}
+\item $s(t)$, $v(t)$ and $a(t)$ are continuous
+\item $s(t)$, $v(t)$ and $a(t)$ are differentiable (except possibly at the endpoints)
+\item The magnitude of acceleration is less than or equal to \SI{0.25}{\meter\per\second\squared} at all times
+\item $s(0) = 0$
+\item $s(T) = \SI{10}{\meter}$
+\item $v(0) = 0$
+\item $v(T) = 0$
+\item $a(0) = 0$
+\item $a(T) = 0$
+\end{itemize}
+
+Our implementation uses a binary search algorithm to find the optimal time $T$ that satisfies all these constraints while maintaining smooth transitions through hyperbolic tangent functions. The acceleration profile is constructed to be symmetric and continuous, ensuring smooth velocity and position profiles through numerical integration.
+
+\section{Mathematical Framework}
+
+\subsection{Continuous Acceleration Profile}
+The acceleration profile is modeled using a combination of hyperbolic tangent functions:
+
+\begin{equation}
+a(t) = a_{\text{max}}\left[\frac{1}{2}(1 + \tanh(k(t-\varepsilon))) - (1 + \tanh(k(t-\frac{T}{2}))) + \frac{1}{2}(1 + \tanh(k(t-(T-\varepsilon))))\right]
+\end{equation}
+
+where:
+\begin{itemize}
+\item $a_{\text{max}}$ is the maximum acceleration
+\item $k = \frac{4}{\varepsilon}$ is the steepness factor
+\item $T$ is the total time
+\item $\varepsilon$ is the transition time parameter
+\end{itemize}
+
+\subsection{Velocity Profile}
+The velocity profile is obtained by integrating the acceleration:
+
+\begin{equation}
+v(t) = \int_0^t a(\tau)\,d\tau
+\end{equation}
+
+After integration, we get:
+
+\begin{equation}
+\begin{split}
+v(t) = a_{\text{max}}\Big[&t + \frac{1}{2k}\ln\left(\frac{\cosh(k(t-\varepsilon))}{\cosh(-k\varepsilon)}\right) \\
+&- \frac{1}{k}\ln\left(\frac{\cosh(k(t-T/2))}{\cosh(-kT/2)}\right) \\
+&+ \frac{1}{2k}\ln\left(\frac{\cosh(k(t-(T-\varepsilon)))}{\cosh(-k\varepsilon)}\right)\Big]
+\end{split}
+\end{equation}
+
+\subsection{Position Profile}
+The position profile is obtained by integrating the velocity:
+
+\begin{equation}
+s(t) = \int_0^t v(\tau)\,d\tau
+\end{equation}
+
+The final form includes dilogarithm functions:
+
+\begin{equation}
+\begin{split}
+s(t) = a_{\text{max}}\Big[&\frac{1}{2}t^2 + \frac{t}{2k}\ln\left(\frac{\cosh(k(t-\varepsilon))}{\cosh(-k\varepsilon)}\right) \\
+&- \frac{t}{k}\ln\left(\frac{\cosh(k(t-T/2))}{\cosh(-kT/2)}\right) \\
+&+ \frac{t}{2k}\ln\left(\frac{\cosh(k(t-(T-\varepsilon)))}{\cosh(-k\varepsilon)}\right) \\
+&+ \frac{1}{4k^2}(\text{Li}_2(-e^{k(t-\varepsilon)}) - \text{Li}_2(-e^{-k\varepsilon})) \\
+&- \frac{1}{2k^2}(\text{Li}_2(-e^{k(t-T/2)}) - \text{Li}_2(-e^{-kT/2})) \\
+&+ \frac{1}{4k^2}(\text{Li}_2(-e^{k(t-(T-\varepsilon))}) - \text{Li}_2(-e^{-k\varepsilon}))\Big]
+\end{split}
+\end{equation}
+
+\section{Implementation Details}
+
+\subsection{Libraries and Dependencies}
+The implementation utilizes several Python libraries:
+\begin{itemize}
+\item \textbf{NumPy}: For numerical computations and array operations
+\item \textbf{Matplotlib}: For creating the motion profile plots
+\item \textbf{Tkinter}: For the graphical user interface and scrollable text panel
+\end{itemize}
+
+\subsection{Code Structure}
+The implementation is structured into several key components:
+
+\subsubsection{Initialization}
+\begin{lstlisting}[language=Python]
+def plot_continuous_forms(max_accel, total_time, epsilon=0.001):
+    root = tk.Tk()
+    dt = 0.001  # Time step
+    t = np.arange(0, total_time + dt, dt)
+    k = 4.0 / epsilon  # Steepness factor
+\end{lstlisting}
+
+\subsubsection{Profile Calculations}
+\begin{lstlisting}[language=Python]
+def a(t):  # Acceleration function
+    step1 = 0.5 * (1 + np.tanh(k * (t - epsilon)))
+    step2 = -1.0 * (1 + np.tanh(k * (t - half_time)))
+    step3 = 0.5 * (1 + np.tanh(k * (t - (total_time - epsilon))))
+    return max_accel * (step1 + step2 + step3)
+
+# Numerical integration for velocity and position
+vel = np.cumsum(accel) * dt
+pos = np.cumsum(vel) * dt
+\end{lstlisting}
+
+\section{Numerical Methods}
+
+\subsection{Integration Technique}
+The implementation uses numerical integration through cumulative summation:
+\begin{itemize}
+\item The velocity is computed by integrating acceleration using the trapezoidal rule
+\item The position is computed by integrating velocity using the same method
+\item The time step dt is chosen small enough (0.001s) to ensure accuracy
+\end{itemize}
+
+\subsection{Error Analysis}
+The numerical integration introduces a small error of order $O(dt^2)$. For dt = 0.001s:
+\begin{itemize}
+\item Velocity error is approximately $10^{-6}$ m/s
+\item Position error is approximately $10^{-9}$ m
+\end{itemize}
+
+\section{Graphical User Interface}
+
+\subsection{Plot Layout}
+The visualization consists of three subplots:
+\begin{itemize}
+\item Acceleration vs. Time
+\item Velocity vs. Time
+\item Position vs. Time
+\end{itemize}
+
+\subsection{Equation Display}
+A scrollable text panel shows:
+\begin{itemize}
+\item Complete mathematical equations
+\item Limit forms as $\varepsilon \to 0$
+\item Key properties and parameters
+\end{itemize}
+
+\section{Key Properties}
+
+\subsection{Limit Behavior}
+As $\varepsilon \to 0$, the profiles approach ideal forms:
+
+\begin{equation}
+a(t) = \begin{cases}
+a_{\text{max}} & 0 < t < T/2 \\
+-a_{\text{max}} & T/2 < t < T \\
+0 & \text{otherwise}
+\end{cases}
+\end{equation}
+
+\begin{equation}
+v(t) = \begin{cases}
+a_{\text{max}}t & 0 \leq t < T/2 \\
+a_{\text{max}}T - a_{\text{max}}(t-T/2) & T/2 \leq t \leq T \\
+0 & t < 0
+\end{cases}
+\end{equation}
+
+\subsection{Important Results}
+\begin{itemize}
+\item Maximum velocity: $v_{\text{max}} = a_{\text{max}}T/2$
+\item Final position: $s(T) = a_{\text{max}}T^2/4$
+\item The profiles are continuous at $t = T/2$
+\item The motion is symmetric about $t = T/2$
+\end{itemize}
+
+\section{Conclusion}
+This implementation provides a robust visualization tool for continuous motion profiles. The combination of mathematical rigor with user-friendly visualization makes it valuable for both educational and practical applications in robotics and control systems.
+
+\section{Future Work}
+Potential improvements include:
+\begin{itemize}
+\item Real-time parameter adjustment
+\item Export capabilities for profile data
+\item Integration with physical system simulations
+\item Additional profile types and transition functions
+\end{itemize}
+
+\end{document}
