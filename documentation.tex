@@ -53,6 +53,8 @@ This document presents a comprehensive analysis of a Python implementation for v
 \section{Introduction}
 The visualization of motion profiles with continuous acceleration transitions is crucial in robotics and control systems. This implementation provides a solution that bridges the gap between theoretical motion planning and practical visualization, using smooth hyperbolic tangent functions to model acceleration transitions.
 
+The objective is to find the fastest possible trajectory that satisfies all constraints. Theoretically, this is achieved when the transition time parameter $\varepsilon$ approaches zero (equivalently, as $k \to \infty$), causing the acceleration profile to approach a bang-bang trajectory while maintaining continuity. In practice, we use a small but non-zero $\varepsilon$ to maintain numerical stability while approximating the optimal solution.
+
 Given a trajectory from time $t=0$ to final time $T$ seconds, our implementation satisfies the following constraints:
 
 \begin{itemize}
@@ -221,6 +223,12 @@ a_{\text{max}}T - a_{\text{max}}(t-T/2) & T/2 \leq t \leq T \\
 \item The profiles are continuous at $t = T/2$
 \item The motion is symmetric about $t = T/2$
 \end{itemize}
+
+\section{Optimality and Transition Time}
+
+The transition time parameter $\varepsilon$ plays a crucial role in achieving optimality. As $\varepsilon$ approaches zero, the acceleration profile approaches a bang-bang trajectory, resulting in the fastest possible motion. However, in practice, a small but non-zero $\varepsilon$ is used to maintain numerical stability.
+
+The choice of $\varepsilon$ is a trade-off between optimality and numerical stability. A smaller $\varepsilon$ results in a more optimal solution but may lead to numerical instability. A larger $\varepsilon$ ensures numerical stability but may result in a less optimal solution.
 
 \section{Conclusion}
 This implementation provides a robust visualization tool for continuous motion profiles. The combination of mathematical rigor with user-friendly visualization makes it valuable for both educational and practical applications in robotics and control systems.
