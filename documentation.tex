@@ -230,6 +230,52 @@ The transition time parameter $\varepsilon$ plays a crucial role in achieving op
 
 The choice of $\varepsilon$ is a trade-off between optimality and numerical stability. A smaller $\varepsilon$ results in a more optimal solution but may lead to numerical instability. A larger $\varepsilon$ ensures numerical stability but may result in a less optimal solution.
 
+\subsection{Asymptotic Behavior}
+
+As $\varepsilon \to 0$ (equivalently, as $k \to \infty$), the hyperbolic tangent functions in our acceleration profile exhibit the following asymptotic behavior:
+
+\begin{equation}
+\lim_{\varepsilon \to 0} \tanh(k(t-t_0)) = \begin{cases}
+-1 & \text{for } t < t_0 \\
+0 & \text{for } t = t_0 \\
+1 & \text{for } t > t_0
+\end{cases}
+\end{equation}
+
+This causes our acceleration profile to approach:
+
+\begin{equation}
+\lim_{\varepsilon \to 0} a(t) = a_{\text{max}} \begin{cases}
+0 & \text{for } t = 0 \\
+1 & \text{for } 0 < t < T/2 \\
+0 & \text{for } t = T/2 \\
+-1 & \text{for } T/2 < t < T \\
+0 & \text{for } t = T
+\end{cases}
+\end{equation}
+
+The corresponding velocity profile approaches a triangular shape:
+
+\begin{equation}
+\lim_{\varepsilon \to 0} v(t) = \begin{cases}
+a_{\text{max}}t & \text{for } 0 \leq t \leq T/2 \\
+a_{\text{max}}(T-t) & \text{for } T/2 \leq t \leq T
+\end{cases}
+\end{equation}
+
+And the position profile approaches a quadratic form in each half:
+
+\begin{equation}
+\lim_{\varepsilon \to 0} s(t) = \begin{cases}
+\frac{1}{2}a_{\text{max}}t^2 & \text{for } 0 \leq t \leq T/2 \\
+d - \frac{1}{2}a_{\text{max}}(T-t)^2 & \text{for } T/2 \leq t \leq T
+\end{cases}
+\end{equation}
+
+where $d$ is the target distance. This limiting case represents the time-optimal solution under our constraints, as it maximizes the acceleration within bounds for the longest possible duration while maintaining continuity of position and velocity.
+
+The convergence rate to this optimal solution is $O(\varepsilon)$ for the acceleration profile, meaning the deviation from the bang-bang trajectory decreases linearly with the transition time parameter. However, the effect on total travel time is $O(\varepsilon^2)$, as the small deviations in acceleration have a quadratic effect on the final position.
+
 \section{Conclusion}
 This implementation provides a robust visualization tool for continuous motion profiles. The combination of mathematical rigor with user-friendly visualization makes it valuable for both educational and practical applications in robotics and control systems.
 

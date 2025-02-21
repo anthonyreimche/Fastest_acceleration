@@ -20,10 +20,23 @@ def plot_continuous_forms(max_accel=0.25, distance=10.0, epsilon=0.001):
     The implementation uses binary search to find the optimal time T that satisfies
     all constraints while maintaining smooth transitions through hyperbolic tangent functions.
     
+    Optimality and Asymptotic Behavior:
+    ----------------------------------
+    The fastest possible trajectory is achieved as epsilon → 0 (k → ∞), where:
+    - Acceleration approaches a bang-bang profile with O(ε) convergence
+    - Velocity approaches a triangular profile
+    - Position approaches a piecewise quadratic profile
+    - Total travel time approaches optimal with O(ε²) convergence
+    
+    The default epsilon=0.001 provides a good balance between optimality and numerical
+    stability. Smaller values will get closer to the time-optimal solution but may
+    cause numerical instability.
+    
     Args:
         max_accel (float): Maximum acceleration in m/s² (default: 0.25)
         distance (float): Target distance to travel in meters (default: 10.0)
-        epsilon (float): Transition time for smoothing (default: 0.001)
+        epsilon (float): Transition time for smoothing, smaller values approach
+                        optimal bang-bang trajectory (default: 0.001)
     """
     # Calculate required time based on distance and acceleration
     # For constant acceleration: distance = 1/2 * a * t^2
