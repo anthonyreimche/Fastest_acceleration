@@ -1,4 +1,6 @@
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.widgets import TextBox
 import tkinter as tk
@@ -65,8 +67,16 @@ def plot_continuous_forms(max_accel=0.25, distance=10.0, epsilon=0.001):
         
         # Calculate acceleration profile
         accel = a(t)
-        vel = np.cumsum(accel) * dt
-        pos = np.cumsum(vel) * dt
+        
+        # Calculate velocity using trapezoidal integration
+        vel = np.zeros_like(t)
+        for i in range(1, len(t)):
+            vel[i] = vel[i-1] + 0.5 * (accel[i] + accel[i-1]) * dt
+        
+        # Calculate position using trapezoidal integration
+        pos = np.zeros_like(t)
+        for i in range(1, len(t)):
+            pos[i] = pos[i-1] + 0.5 * (vel[i] + vel[i-1]) * dt
         
         final_pos = pos[-1]
         error = final_pos - distance

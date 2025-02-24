@@ -1,0 +1,18 @@
+\contentsline {section}{\numberline {1}Problem Statement and Objectives}{2}{section.1}%
+\contentsline {subsection}{\numberline {1.1}Problem Definition}{2}{subsection.1.1}%
+\contentsline {subsection}{\numberline {1.2}Constraints}{2}{subsection.1.2}%
+\contentsline {section}{\numberline {2}Theoretical Analysis}{3}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Optimal Control Theory}{3}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Time-Optimal Solution}{3}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}Smooth Approximation}{3}{subsection.2.3}%
+\contentsline {subsection}{\numberline {2.4}Limit Analysis}{4}{subsection.2.4}%
+\contentsline {subsubsection}{\numberline {2.4.1}Pointwise Convergence}{4}{subsubsection.2.4.1}%
+\contentsline {subsubsection}{\numberline {2.4.2}Transition Region Analysis}{5}{subsubsection.2.4.2}%
+\contentsline {subsubsection}{\numberline {2.4.3}Time Optimality}{5}{subsubsection.2.4.3}%
+\contentsline {section}{\numberline {3}Implementation and Results}{5}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Algorithm Design}{5}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Results and Analysis}{6}{subsection.3.2}%
+\contentsline {section}{\numberline {4}Convergence Analysis}{6}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Numerical Experiments}{6}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Practical Considerations}{8}{subsection.4.2}%
+\contentsline {section}{\numberline {5}Conclusion}{8}{section.5}%

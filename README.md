@@ -76,5 +76,31 @@ For detailed mathematical analysis and implementation details, see:
 ## Project Structure
 
 - `examples/continuous_forms.py`: Main implementation of continuous motion profiles
-- `documentation.tex`: Mathematical analysis and derivations
+- `generate_graphs.py`: Script to generate motion profile visualizations
+- `documentation.tex`: Mathematical analysis and derivations (with PDF output)
 - `requirements.txt`: Project dependencies
+
+## Proof of Concept
+
+An interactive visualization of the motion profiles can be found on Desmos:
+[Continuous Motion Profile Demo](https://www.desmos.com/calculator/zxiwhu0j7f)
+
+This interactive graph demonstrates:
+- The smooth acceleration transitions using hyperbolic tangent functions
+- The resulting velocity and position profiles
+- How the profiles maintain continuity and respect acceleration bounds
+- The relationship between theoretical optimality and practical implementation
+
+## Authors
+
+Implementation and Mathematical Analysis:
+- Anthony Reimche
+
+Project Contributors:
+- Erik Gindis
+- Sarah Guo
+- Owen Li
+- Jayden Ng
+
+Course Instructor:
+- Bruno L'Esperance
