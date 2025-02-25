@@ -36,149 +36,116 @@
 
 \lstset{style=mystyle}
 
-\title{Continuous Motion Profile Visualization:\\Implementation and Mathematical Analysis}
-\author{Instructor: Bruno L'Esperance\\\\
-    Erik Gindis A01015581 \\
-    Sarah Guo A01235022 \\
-    Owen Li A01417162 \\
-    Jayden Ng A01429770 \\
-    Anthony Reimche A01429321}
+\title{Time-Optimal Control for a Water Delivery Robot\\[2ex]
+MATH 2342: Calculus for Robotics\\[1ex]
+\href{https://github.com/anthonyreimche/Fastest_acceleration}{\small View on GitHub}}
+\author{Instructor: Bruno L'Esperance\\[3ex]
+    \begin{tabular}{lr}
+    Erik Gindis & A01015581 \\
+    Sarah Guo & A01235022 \\
+    Owen Li & A01417162 \\
+    Jayden Ng & A01429770 \\
+    Anthony Reimche & A01429321
+    \end{tabular}}
 \date{\today}
 
 \begin{document}
 
 \maketitle
 
-\begin{abstract}
-This document presents a comprehensive analysis of a Python implementation for visualizing continuous motion profiles. We discuss the mathematical foundations of smooth acceleration transitions, the numerical methods employed for integration, and the technical implementation details. The focus is on creating a user-friendly interface that displays both the motion profiles and their underlying mathematical equations.
-\end{abstract}
-
+\newpage
 \tableofcontents
 
+\newpage
 \section{Problem Statement and Objectives}
 
 \subsection{Problem Definition}
-Given a target distance $d$, we seek to design a motion profile that moves an object from position $s(0)=0$ to $s(T)=d$ in minimum time $T$, while satisfying continuity and boundary constraints. This has applications in robotics, manufacturing, and automated systems where smooth, time-optimal motion is required.
+This project implements a time-efficient motion profile with continuous acceleration for point-to-point movement in automated systems. The system uses a maximum acceleration $a_{\text{max}} = 0.25 \text{ m/s}^2$ to demonstrate smooth transitions while maintaining reasonable time efficiency.
 
-\subsection{Constraints}
-The motion profile must satisfy:
+\subsection{Project Goals}
 \begin{itemize}
-\item \textbf{Continuity}: $s(t)$, $v(t)$ and $a(t)$ are continuous
-\item \textbf{Differentiability}: $s(t)$, $v(t)$ and $a(t)$ are differentiable (except possibly at endpoints)
-\item \textbf{Acceleration bounds}: $|a(t)| \leq a_{\text{max}}$ at all times
-\item \textbf{Initial conditions}: $s(0) = 0$, $v(0) = 0$, $a(0) = 0$
-\item \textbf{Final conditions}: $s(T) = d$, $v(T) = 0$, $a(T) = 0$
+\item Generate continuous acceleration profiles
+\item Achieve precise target distance
+\item Minimize travel time while maintaining continuity
+\item Visualize motion characteristics
 \end{itemize}
 
+\newpage
 \section{Theoretical Analysis}
 
-\subsection{Optimal Control Theory}
-The time-optimal control problem for a double integrator system under bounded acceleration is well-studied. By Pontryagin's Maximum Principle, the time-optimal solution must maximize the Hamiltonian:
+\subsection{Understanding Motion Profiles}
+The project implements a continuous acceleration profile that improves upon the bang-bang control strategy. While bang-bang control provides time-optimal solutions, its discontinuous nature makes it impractical for mechanical systems. Our implementation maintains continuous acceleration while approximating time-optimal performance.
 
+\subsection{The Ideal Case}
+The bang-bang profile serves as our theoretical benchmark, representing the time-optimal solution when acceleration discontinuities are permitted ($\varepsilon = 0$). This provides both a performance baseline and identifies the critical transition points where smoothing is required in the practical implementation.
+
+The theoretical bang-bang acceleration profile is given by:
 \begin{equation}
-H(x, v, a, \lambda_1, \lambda_2) = \lambda_1 v + \lambda_2 a + 1
-\end{equation}
-
-where $\lambda_1$ and $\lambda_2$ are costate variables. This leads to the bang-bang principle: the optimal control must take extreme values to minimize time.
-
-\subsection{Time-Optimal Solution}
-The theoretically optimal solution is the bang-bang profile:
-\begin{equation}
-a_{\text{ideal}}(t) = \begin{cases}
+a_{\text{bb}}(t) = \begin{cases}
 a_{\text{max}} & 0 < t < T/2 \\
 -a_{\text{max}} & T/2 < t < T \\
 0 & \text{otherwise}
 \end{cases}
 \end{equation}
 
-This profile achieves:
-\begin{itemize}
-\item Minimum time: $T_{\text{opt}} = 2\sqrt{2d/a_{\text{max}}}$
-\item Maximum velocity: $v_{\text{max}} = a_{\text{max}}T_{\text{opt}}/2$
-\item Exact distance: $d = a_{\text{max}}T_{\text{opt}}^2/4$
-\end{itemize}
+This profile achieves the theoretical minimum time of $T = 12.649\text{ s}$ but has discontinuities at $t = 0$, $T/2$, and $T$. Our smooth profile will approximate this function while maintaining continuity at these switching points.
 
-However, this solution has discontinuities that make it impractical for real systems.
-
-\subsection{Smooth Approximation}
-For practical implementation, we approximate the bang-bang profile using three hyperbolic tangent functions:
+\newpage
+\section{Our Smooth Profile Solution}
+The continuous acceleration profile is defined as the limit of hyperbolic tangent functions as $\varepsilon \to 0$:
 
 \begin{equation}
-a(t) = a_{\text{max}} \left(\frac{1 + \tanh(k(t - \varepsilon))}{2} - (1 + \tanh(k(t - T/2))) + \frac{1 + \tanh(k(t - (T-\varepsilon)))}{2}\right)
+a(t) = \lim_{\varepsilon \to 0} \left\{ a_{\text{max}}[1 + \tanh(\frac{4}{\varepsilon}t)] - 2a_{\text{max}}[1 + \tanh(\frac{4}{\varepsilon}(t-T/2))] + a_{\text{max}}[1 + \tanh(\frac{4}{\varepsilon}(t-T))] \right\}
 \end{equation}
 
-where:
+This construction ensures that the transition is approximately 98\% complete within any arbitrarily small time window $\varepsilon$, as $\tanh(2) \approx 0.96$. As $\varepsilon \to 0$, each transition becomes arbitrarily sharp while maintaining continuity.
+
+\subsection{Component Analysis}
+We construct $a(t)$ as the sum of three components: $a(t) = a_0(t) + a_1(t) + a_2(t)$, where each component serves a specific purpose in the motion profile. Here:
 \begin{itemize}
-\item $k = 4/\varepsilon$ controls the steepness of transitions
-\item $\varepsilon$ is the transition time parameter (default 0.001)
-\item $T$ is the total time, determined through binary search
+\item $t$ is the time variable ($0 \leq t \leq T$)
+\item $T$ is the total movement time (determined through optimization)
+\item $\varepsilon$ is our smoothing parameter, which we take to zero in the limit
 \end{itemize}
 
-The three hyperbolic tangent terms serve distinct purposes:
-\begin{enumerate}
-\item $\frac{1 + \tanh(k(t - \varepsilon))}{2}$: Smoothly ramps up acceleration from 0 to $a_{\text{max}}$
-\item $-(1 + \tanh(k(t - T/2)))$: Smoothly transitions from positive to negative acceleration at $T/2$
-\item $\frac{1 + \tanh(k(t - (T-\varepsilon)))}{2}$: Smoothly returns acceleration to 0
-\end{enumerate}
+The term $1 + \tanh$ appears in each component because $\tanh$ alone ranges from -1 to 1, while we need a function that transitions from 0 to 2. This allows each component to smoothly transition from 0 to $2a_{\text{max}}$ (or vice versa), ensuring the sum achieves exactly $\pm a_{\text{max}}$ at the appropriate times.
 
-This smooth acceleration profile integrates to produce:
+Initial acceleration $a_0(t)$:
+\begin{equation}
+a_0(t) = \lim_{\varepsilon \to 0} a_{\text{max}}[1 + \tanh(\frac{4}{\varepsilon}t)]
+\end{equation}
+The factor $a_{\text{max}}$ sets the magnitude, while $[1 + \tanh(\frac{4}{\varepsilon}t)]$ creates a smooth transition from 0 to 2 centered at $t=0$. This gives us a smooth ramp-up from 0 to $a_{\text{max}}$.
+
+Deceleration transition $a_1(t)$:
+\begin{equation}
+a_1(t) = \lim_{\varepsilon \to 0} -2a_{\text{max}}[1 + \tanh(\frac{4}{\varepsilon}(t-T/2))]
+\end{equation}
+The factor of $-2$ combined with the time shift $T/2$ creates a transition from $a_{\text{max}}$ to $-a_{\text{max}}$ at the midpoint of motion. The doubled magnitude is necessary to counteract both $a_0$ and $a_2$, which would otherwise sum to $2a_{\text{max}}$ at $T/2$.
+
+Final deceleration $a_2(t)$:
+\begin{equation}
+a_2(t) = \lim_{\varepsilon \to 0} a_{\text{max}}[1 + \tanh(\frac{4}{\varepsilon}(t-T))]
+\end{equation}
+Similar to $a_0$, but time-shifted by $T$ and maintaining the same sign as $a_1$, this component ensures a smooth return to zero acceleration at the end of motion.
+
+As $\varepsilon \to 0$, these components combine to form a continuous approximation of the bang-bang profile. The factor $4/\varepsilon$ in each component ensures that transitions occur within a time window of $\varepsilon$, as $\tanh(2) \approx 0.96$ means the transition is 96\% complete at $\pm\varepsilon/2$ from each switching point.
+
+Detailed convergence analysis (see Appendix A) shows that this profile achieves:
 \begin{itemize}
-\item A velocity profile $v(t)$ that smoothly transitions from 0 to $v_{\text{max}}$ and back to 0
-\item A position profile $s(t)$ that smoothly reaches the target distance $d = 10.0\text{m}$ at time $T \approx 12.65\text{s}$
+\item Quadratic convergence to optimal time as $\varepsilon \to 0$
+\item Linear convergence of acceleration error
+\item Cubic convergence of position error
 \end{itemize}
 
-The actual time $T$ is determined through binary search to achieve the exact target distance while maintaining all continuity constraints. For our default parameters ($a_{\text{max}} = 0.25\text{m/s}^2$, $d = 10.0\text{m}$, $\varepsilon = 0.001$), this results in a travel time approximately 1.5 times longer than the theoretical minimum time of the bang-bang profile.
+\newpage
+\section{Conclusion}
+The smooth profile solution successfully balances theoretical optimality with practical constraints. By using hyperbolic tangent functions for transitions and analyzing the limit as $\varepsilon \to 0$, we show that our solution can arbitrarily approach time-optimal performance while maintaining continuous acceleration. This makes the solution suitable for real-world robotic applications where smooth motion is essential.
 
-\subsection{Limit Analysis}
-As $k \to \infty$ (equivalently, $\varepsilon \to 0$), our solution converges to the ideal bang-bang profile. Let's analyze this convergence:
-
-\subsubsection{Pointwise Convergence}
-For any fixed $t \neq 0, T/2, T$:
-\begin{equation}
-\lim_{k \to \infty} \tanh(k(t-t_0)) = \text{sign}(t-t_0)
-\end{equation}
-
-The error at any point $t$ away from the switching times is:
-\begin{equation}
-|a(t) - a_{\text{ideal}}(t)| \leq C_1 e^{-k|t-t_s|}
-\end{equation}
-where $t_s$ is the nearest switching time and $C_1$ is a constant.
-
-\subsubsection{Transition Region Analysis}
-Near switching times, the transition occurs over a region of width $O(1/k)$:
-\begin{equation}
-\Delta t_{\text{transition}} \approx \frac{4}{k} = \varepsilon
-\end{equation}
-
-This leads to three key convergence rates:
-\begin{itemize}
-\item Acceleration error: $O(\varepsilon)$ uniformly
-\item Velocity error: $O(\varepsilon^2)$ due to integration
-\item Position error: $O(\varepsilon^3)$ due to double integration
-\end{itemize}
-
-\subsubsection{Time Optimality}
-The time penalty compared to the ideal solution is:
-\begin{equation}
-T - T_{\text{opt}} = O(\varepsilon^2)
-\end{equation}
-
-This quadratic convergence arises because:
-\begin{itemize}
-\item Each transition region contributes $O(\varepsilon)$ in width
-\item The acceleration deficit in each region is also $O(\varepsilon)$
-\item The combined effect on final position is $O(\varepsilon^2)$
-\end{itemize}
-
-\section{Implementation and Results}
-
+\clearpage
+\appendix
+\section{Implementation Details}
 \subsection{Algorithm Design}
-The implementation balances optimality with numerical stability:
-\begin{itemize}
-\item $k = 4/\varepsilon$ chosen to achieve rapid convergence
-\item Binary search adjusts $T$ to compensate for transition effects
-\item Integration step $dt \ll \varepsilon$ to capture transitions accurately
-\end{itemize}
+The implementation uses binary search to find the optimal time $T$ that reaches the exact target distance. For each candidate time:
 
 \begin{lstlisting}[language=Python, caption=Core implementation of motion profiles]
 def plot_continuous_forms(max_accel=0.25, distance=10.0, epsilon=0.001):
@@ -210,24 +177,21 @@ def plot_continuous_forms(max_accel=0.25, distance=10.0, epsilon=0.001):
         pos = np.cumsum(vel) * dt
 \end{lstlisting}
 
-\subsection{Results and Analysis}
-Figure \ref{fig:profiles} shows the resulting motion profiles for:
-\begin{itemize}
-\item Maximum acceleration: $a_{\text{max}} = 0.25$ m/s²
-\item Target distance: $d = 10.0$ m
-\item Transition time: $\varepsilon = 0.001$ s
-\end{itemize}
+\newpage
+\section{Numerical Results}
+\subsection{Implementation}
+Our implementation demonstrates the theoretical behavior as $\varepsilon \to 0$ while maintaining numerical stability. Figure \ref{fig:profiles} shows an example of the motion profiles.
 
 \begin{figure}[h]
 \centering
 \includegraphics[width=\textwidth]{motion_profiles.pdf}
-\caption{Continuous motion profiles showing acceleration, velocity, and position over time. The profiles demonstrate smooth transitions while maintaining the required constraints.}
+\caption{Motion profiles showing smooth transitions in acceleration (top), velocity (middle), and position (bottom) over time. Numerical computation parameters: $a_{\text{max}} = 0.25 \text{ m/s}^2$, $d = 10.0 \text{ m}$, $\varepsilon = 0.001$ (for stable integration).}
 \label{fig:profiles}
 \end{figure}
 
-\section{Convergence Analysis}
+For numerical computation, we use $\varepsilon = 0.001$ to maintain stability while achieving high accuracy.
 
-\subsection{Numerical Experiments}
+\subsection{Convergence Analysis}
 We analyze convergence by varying $\varepsilon$:
 
 \begin{center}
@@ -248,26 +212,5 @@ The results confirm:
 \item Linear convergence of acceleration profile
 \item Cubic convergence of position error
 \end{itemize}
-
-\subsection{Practical Considerations}
-The choice of $\varepsilon$ involves tradeoffs:
-\begin{itemize}
-\item Smaller $\varepsilon$ approaches time-optimal solution
-\item $\varepsilon < 10^{-4}$ may cause numerical instability
-\item Default $\varepsilon=0.001$ gives 99.975\% time optimality
-\item Physical systems benefit from smooth transitions
-\end{itemize}
-
-\section{Conclusion}
-Our solution successfully achieves:
-\begin{itemize}
-\item Continuous and differentiable motion profiles
-\item Near time-optimal performance
-\item Bounded acceleration within $\pm a_{\text{max}}$
-\item Exact target distance through binary search
-\item Numerical stability with reasonable parameters
-\end{itemize}
-
-The implementation provides a practical compromise between theoretical optimality and real-world constraints, making it suitable for robotics and automation applications.
 
 \end{document}
